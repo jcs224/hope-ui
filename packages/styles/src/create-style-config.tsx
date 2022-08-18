@@ -13,23 +13,74 @@
  */
 
 import { filterUndefined, isFunction } from "@hope-ui/utils";
+import { clsx } from "clsx";
 import { mergeWith } from "lodash-es";
-import { createMemo } from "solid-js";
+import { createMemo, splitProps } from "solid-js";
 
+import { css } from "./stitches.config";
+import { toCSSObject } from "./styled-system/to-css-object";
 import { useTheme, useThemeStyleConfig } from "./theme";
 import {
+  ClassNameObjects,
   StyleConfig,
+  StyleConfigClassNames,
   StyleConfigInterpolation,
   StyleConfigOverride,
   StyleConfigOverrideInterpolation,
   StyleObjects,
   SystemStyleObject,
-  ThemeColorScheme,
+  Theme,
   ThemeVars,
   UseStyleConfigFn,
   UseStyleConfigOptions,
+  UseStyleConfigReturn,
   VariantSelection,
 } from "./types";
+
+/** Convert style objects to className objects. */
+function toClassNameObjects<Parts extends string>(
+  styleObjects: Partial<StyleObjects<Parts>>,
+  theme: Theme
+): Partial<ClassNameObjects<Parts>> {
+  return Object.entries(styleObjects).reduce((acc, [part, style]) => {
+    acc[part] = css(toCSSObject(style as SystemStyleObject, theme))().className;
+    return acc;
+  }, {} as any);
+}
+
+/** Compute classNames from a style config. */
+function computeClassNames<Parts extends string, VariantDefinitions extends Record<string, any>>(
+  styleConfig: StyleConfig<Parts, VariantDefinitions>,
+  theme: Theme
+): StyleConfigClassNames<Parts, VariantDefinitions> {
+  const { baseStyles = {}, variants = {}, compoundVariants = [] } = styleConfig;
+
+  // 1. create "base" classNames.
+  const baseClassNames = toClassNameObjects(baseStyles, theme);
+
+  // 2. create "variants" classNames.
+  const variantsClassNames = Object.entries(variants).reduce((acc, [variant, definition]) => {
+    // a variant like "size"
+    acc[variant] = Object.entries(definition as any).reduce((acc, [value, styleObjects]) => {
+      // a variant value like "sm"
+      acc[value] = toClassNameObjects(styleObjects as any, theme);
+      return acc;
+    }, {} as any);
+    return acc;
+  }, {} as any);
+
+  // 3. create "compound variants" classNames.
+  const compoundVariantsClassNames = compoundVariants.map(compoundVariant => ({
+    variants: compoundVariant.variants,
+    classNames: toClassNameObjects(compoundVariant.styles, theme),
+  }));
+
+  return {
+    baseClassNames: baseClassNames,
+    variants: variantsClassNames,
+    compoundVariants: compoundVariantsClassNames,
+  } as StyleConfigClassNames<Parts, VariantDefinitions>;
+}
 
 /** Return whether a compound variant should be applied. */
 function shouldApplyCompound<T extends VariantSelection<any>>(compoundCheck: T, selections: T) {
@@ -47,11 +98,10 @@ function extractStyleConfigOverride<
   VariantDefinitions extends Record<string, any>
 >(
   config: StyleConfigOverrideInterpolation<Parts, VariantDefinitions> | undefined,
-  vars: ThemeVars,
-  colorScheme: ThemeColorScheme
+  vars: ThemeVars
 ): StyleConfigOverride<Parts, VariantDefinitions> {
   if (isFunction(config)) {
-    return config({ vars, colorScheme });
+    return config(vars);
   }
 
   return config ?? {};
@@ -66,99 +116,145 @@ export function createStyleConfig<
 ): UseStyleConfigFn<Parts, VariantDefinitions> {
   const extractBaseStyleConfig = isFunction(interpolation) ? interpolation : () => interpolation;
 
-  function useStyles(name: string, options: UseStyleConfigOptions<Parts, VariantDefinitions>) {
+  let isFirstLoad = true;
+  let baseStyleConfig: StyleConfig<Parts, VariantDefinitions> | undefined;
+  let baseStyleConfigClassNames: StyleConfigClassNames<Parts, VariantDefinitions> | undefined;
+  let parts: Array<Parts> = [];
+
+  return function useStyleConfig(
+    name: string,
+    options: UseStyleConfigOptions<Parts, VariantDefinitions>
+  ): UseStyleConfigReturn<Parts> {
     const theme = useTheme();
     const themeStyleConfig = useThemeStyleConfig(name);
 
-    const styles = createMemo(() => {
-      const {
-        colorScheme = "primary", // fallback to primary colorScheme if not provided.
-        styleConfigOverride,
-        unstyled,
-        ...variantSelections
-      } = options;
+    // Hack to make sure base style config is computed only once for every component instance,
+    // but has access to the current theme since `useStyleConfig` run in a component context.
+    if (isFirstLoad) {
+      baseStyleConfig = extractBaseStyleConfig(theme.vars);
 
-      // base.
-      const baseStyleConfig = unstyled
-        ? {}
-        : extractBaseStyleConfig({ vars: theme.vars, colorScheme });
+      baseStyleConfigClassNames = computeClassNames(baseStyleConfig, theme);
 
+      // get component parts from config baseStyles object.
+      parts = Object.keys(baseStyleConfig?.baseStyles) as Array<Parts>;
+
+      isFirstLoad = false;
+    }
+
+    const styleConfigOverrides = createMemo(() => {
       // overrides from theme.
-      const themeStyleConfigOverride = extractStyleConfigOverride(
-        themeStyleConfig(),
-        theme.vars,
-        colorScheme
-      );
+      const themeStyleConfigOverride = extractStyleConfigOverride(themeStyleConfig(), theme.vars);
 
       // overrides from component `styleConfig` prop.
       const componentStyleConfigOverride = extractStyleConfigOverride(
-        styleConfigOverride,
-        theme.vars,
-        colorScheme
+        options.styleConfigOverride,
+        theme.vars
       );
 
-      // 1. merge styles configs.
-      const mergedConfig: StyleConfig<Parts, VariantDefinitions> = mergeWith(
-        {},
-        baseStyleConfig,
-        themeStyleConfigOverride,
-        componentStyleConfigOverride
-      );
+      return mergeWith({}, themeStyleConfigOverride, componentStyleConfigOverride) as StyleConfig<
+        Parts,
+        VariantDefinitions
+      >;
+    });
 
-      // 2. add "base" styles.
-      const stylesMap = new Map(
-        Object.entries(mergedConfig.baseStyle).map(([part, style]) => [
-          part as Parts,
-          [style as SystemStyleObject | undefined],
-        ])
-      );
+    const selectedVariants = createMemo(() => {
+      const [_, variantSelections] = splitProps(options, ["styleConfigOverride", "unstyled"]);
 
-      // 3. add "variants" styles.
-      const selections = {
-        ...mergedConfig.defaultVariants,
+      return {
+        ...baseStyleConfig?.defaultVariants,
+        ...filterUndefined(styleConfigOverrides().defaultVariants ?? {}),
         ...filterUndefined(variantSelections),
       } as VariantSelection<VariantDefinitions>;
+    });
 
-      for (const variantName in selections) {
-        const selection = selections[variantName];
+    const classes = createMemo(() => {
+      // If unstyled, return empty object.
+      if (options.unstyled) {
+        return {} as ClassNameObjects<Parts>;
+      }
+
+      // 1. add "base" classNames.
+      const classNamesMap = new Map(
+        parts.map(part => [part, [baseStyleConfigClassNames?.baseClassNames[part]]])
+      );
+
+      // 2. add "variants" classNames.
+      for (const variantName in selectedVariants()) {
+        const selection = selectedVariants()[variantName];
 
         if (selection == null) {
           continue;
         }
 
-        // @ts-ignore
-        const selectionStyle = mergedConfig.variants?.[variantName]?.[String(selection)];
+        const selectionClassNameObjects =
+          // @ts-ignore
+          baseStyleConfigClassNames.variants[variantName]?.[String(selection)];
 
-        if (!selectionStyle) {
+        if (selectionClassNameObjects != null) {
+          Object.entries(selectionClassNameObjects).forEach(([part, className]) => {
+            classNamesMap.get(part as Parts)?.push(className as string);
+          });
+        }
+      }
+
+      // 3. add "compoundVariants" classNames.
+      for (const compoundVariant of baseStyleConfigClassNames?.compoundVariants ?? []) {
+        if (shouldApplyCompound(compoundVariant.variants, selectedVariants())) {
+          Object.entries(compoundVariant.classNames).forEach(([part, className]) => {
+            classNamesMap.get(part as Parts)?.push(className as string);
+          });
+        }
+      }
+
+      // 4. merge all classNames of each part.
+      return Array.from(classNamesMap.entries()).reduce((acc, [part, classNames]) => {
+        const staticClass = `hope-${name}-${part}`;
+        acc[part] = clsx(staticClass, ...classNames);
+        return acc;
+      }, {} as ClassNameObjects<Parts>);
+    });
+
+    const styles = createMemo(() => {
+      // 1. add "base" styles.
+      const stylesMap = new Map(
+        parts.map(part => [part, [styleConfigOverrides().baseStyles?.[part]]])
+      );
+
+      // 2. add "variants" styles.
+      for (const variantName in selectedVariants()) {
+        const selection = selectedVariants()[variantName];
+
+        if (selection == null) {
           continue;
         }
 
-        Object.entries(selectionStyle).forEach(([part, style]) => {
-          stylesMap.get(part as Parts)?.push(style as SystemStyleObject);
-        });
-      }
+        const selectionStyleObjects =
+          // @ts-ignore
+          styleConfigOverrides().variants?.[variantName]?.[String(selection)];
 
-      // 4. add "compoundVariants" styles.
-      for (const compoundVariant of mergedConfig.compoundVariants ?? []) {
-        if (shouldApplyCompound(compoundVariant.variants, selections)) {
-          Object.entries(compoundVariant.style).forEach(([part, style]) => {
+        if (selectionStyleObjects != null) {
+          Object.entries(selectionStyleObjects).forEach(([part, style]) => {
             stylesMap.get(part as Parts)?.push(style as SystemStyleObject);
           });
         }
       }
 
-      const mergedStyles: any = {};
+      // 3. add "compoundVariants" styles.
+      for (const compoundVariant of styleConfigOverrides().compoundVariants ?? []) {
+        if (shouldApplyCompound(compoundVariant.variants, selectedVariants())) {
+          Object.entries(compoundVariant.styles).forEach(([part, style]) => {
+            stylesMap.get(part as Parts)?.push(style as SystemStyleObject);
+          });
+        }
+      }
 
-      // 5. merge all styles objects of each part.
-      stylesMap.forEach((styles, part) => {
-        mergedStyles[part] = mergeWith({}, ...styles);
-      });
-
-      return mergedStyles as StyleObjects<Parts>;
+      // 4. merge all styles objects of each part.
+      return Array.from(stylesMap.entries()).reduce((acc, [part, styles]) => {
+        acc[part] = mergeWith({}, ...styles);
+        return acc;
+      }, {} as StyleObjects<Parts>);
     });
 
-    return styles;
-  }
-
-  return useStyles;
+    return { classes, styles };
+  };
 }
