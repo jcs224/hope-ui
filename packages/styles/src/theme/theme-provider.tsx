@@ -8,13 +8,10 @@
 
 import { Accessor, createContext, createMemo, mergeProps, ParentProps, useContext } from "solid-js";
 
-import type { StyleConfigOverrideInterpolation, Theme } from "../types";
-import { ThemeOverride } from "../types";
-import { createDefaultColors } from "./create-default-colors";
+import type { ComponentTheme, Theme } from "../types";
 import { DEFAULT_THEME } from "./default-theme";
 import { injectCSSVars } from "./inject-css-vars";
 import { injectGlobalStyles } from "./inject-global-styles";
-import { mergeTheme } from "./merge-theme";
 
 const ThemeContext = createContext<Theme>(DEFAULT_THEME);
 
@@ -22,9 +19,7 @@ export function useTheme() {
   return useContext(ThemeContext);
 }
 
-export function useThemeStyleConfig(
-  component?: string
-): Accessor<StyleConfigOverrideInterpolation<any, any> | undefined> {
+export function useComponentTheme(component?: string): Accessor<ComponentTheme | undefined> {
   const theme = useTheme();
 
   return createMemo(() => {
@@ -32,7 +27,7 @@ export function useThemeStyleConfig(
       return undefined;
     }
 
-    return theme.components[component]?.styleConfigOverride;
+    return theme.components[component] ?? undefined;
   });
 }
 
@@ -69,22 +64,8 @@ export function ThemeProvider(props: ThemeProviderProps) {
   const theme = props.theme ?? DEFAULT_THEME;
 
   injectCSSVars(theme);
+
   props.withGlobalStyles && injectGlobalStyles(theme);
 
   return <ThemeContext.Provider value={theme}>{props.children}</ThemeContext.Provider>;
-}
-
-export function extendTheme(themeOverride: ThemeOverride): Theme {
-  let finalDefaultTheme = DEFAULT_THEME;
-
-  // Need to recreate colors if user has set a custom css var prefix,
-  // so global variants css variables reference is correct.
-  if (themeOverride.cssVarPrefix != null) {
-    finalDefaultTheme = {
-      ...DEFAULT_THEME,
-      colors: createDefaultColors(themeOverride.cssVarPrefix),
-    };
-  }
-
-  return mergeTheme(finalDefaultTheme, themeOverride);
 }

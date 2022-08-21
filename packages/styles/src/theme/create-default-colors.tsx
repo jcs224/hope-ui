@@ -1,34 +1,138 @@
-import { ThemeColors } from "../types";
-import { createGetCssVar } from "../utils/css-var";
-import {
-  blue,
-  blueDark,
-  gray,
-  grayDark,
-  green,
-  greenDark,
-  purple,
-  purpleDark,
-  red,
-  redDark,
-  yellow,
-  yellowDark,
-} from "./palettes";
+/*!
+ * whiteAlpha and blackAlpha colors from Chakra UI
+ * MIT Licensed, Copyright (c) 2019 Segun Adebayo.
+ *
+ * Credits to the Chakra UI team:
+ * https://github.com/chakra-ui/chakra-ui/blob/main/packages/theme/src/foundations/colors.ts
+ */
+
+import { PaletteScale, ThemeColors } from "../types";
+import { createGetCssVar } from "../utils";
+import { createGrayPalette, createPalette } from "./create-palette";
+
+const [primary, primaryDark] = createPalette({
+  50: "#e6f6ff",
+  100: "#bae3ff",
+  200: "#7cc4fa",
+  300: "#47a3f3",
+  400: "#2186eb",
+  500: "#0967d2",
+  600: "#0552b5",
+  700: "#03449e",
+  800: "#01337d",
+  900: "#002159",
+});
+
+const [neutral, neutralDark] = createGrayPalette({
+  50: "#fafafa",
+  100: "#f5f5f5",
+  200: "#e5e5e5",
+  300: "#d4d4d4",
+  400: "#a3a3a3",
+  500: "#737373",
+  600: "#525252",
+  700: "#404040",
+  800: "#262626",
+  900: "#171717",
+});
+
+const [success, successDark] = createPalette({
+  50: "#e3f9e5",
+  100: "#c1eac5",
+  200: "#a3d9a5",
+  300: "#7bc47f",
+  400: "#57ae5b",
+  500: "#3f9142",
+  600: "#2f8132",
+  700: "#207227",
+  800: "#0e5814",
+  900: "#05400a",
+});
+
+const [info, infoDark] = createPalette({
+  50: "#eae2f8",
+  100: "#cfbcf2",
+  200: "#a081d9",
+  300: "#8662c7",
+  400: "#724bb7",
+  500: "#653cad",
+  600: "#51279b",
+  700: "#421987",
+  800: "#34126f",
+  900: "#240754",
+});
+
+const [warning, warningDark] = createPalette({
+  50: "#fffbea",
+  100: "#fff3c4",
+  200: "#fce588",
+  300: "#fadb5f",
+  400: "#f7c948",
+  500: "#f0b429",
+  600: "#de911d",
+  700: "#cb6e17",
+  800: "#b44d12",
+  900: "#8d2b0b",
+});
+
+const [danger, dangerDark] = createPalette({
+  50: "#ffe3e3",
+  100: "#ffbdbd",
+  200: "#ff9b9b",
+  300: "#f86a6a",
+  400: "#ef4e4e",
+  500: "#e12d39",
+  600: "#cf1124",
+  700: "#ab091e",
+  800: "#8a041a",
+  900: "#610316",
+});
+
+const whiteAlpha: PaletteScale = {
+  50: "rgba(255, 255, 255, 0.04)",
+  100: "rgba(255, 255, 255, 0.06)",
+  200: "rgba(255, 255, 255, 0.08)",
+  300: "rgba(255, 255, 255, 0.16)",
+  400: "rgba(255, 255, 255, 0.24)",
+  500: "rgba(255, 255, 255, 0.36)",
+  600: "rgba(255, 255, 255, 0.48)",
+  700: "rgba(255, 255, 255, 0.64)",
+  800: "rgba(255, 255, 255, 0.80)",
+  900: "rgba(255, 255, 255, 0.92)",
+};
+
+const blackAlpha: PaletteScale = {
+  50: "rgba(0, 0, 0, 0.04)",
+  100: "rgba(0, 0, 0, 0.06)",
+  200: "rgba(0, 0, 0, 0.08)",
+  300: "rgba(0, 0, 0, 0.16)",
+  400: "rgba(0, 0, 0, 0.24)",
+  500: "rgba(0, 0, 0, 0.36)",
+  600: "rgba(0, 0, 0, 0.48)",
+  700: "rgba(0, 0, 0, 0.64)",
+  800: "rgba(0, 0, 0, 0.80)",
+  900: "rgba(0, 0, 0, 0.92)",
+};
+
+const white = "#ffffff";
+const black = "#0a0a0a"; // very dark neutral gray, do not use pure black.
 
 export function createDefaultColors(cssVarPrefix: string): ThemeColors {
   const getCssVar = createGetCssVar(cssVarPrefix);
 
   return {
     light: {
-      primary: blue("primary", cssVarPrefix),
-      neutral: gray("neutral", cssVarPrefix),
-      success: green("success", cssVarPrefix),
-      info: purple("info", cssVarPrefix),
-      warning: yellow("warning", cssVarPrefix),
-      danger: red("danger", cssVarPrefix),
+      whiteAlpha,
+      blackAlpha,
+      primary: primary("primary", cssVarPrefix),
+      neutral: neutral("neutral", cssVarPrefix),
+      success: success("success", cssVarPrefix),
+      info: info("info", cssVarPrefix),
+      warning: warning("warning", cssVarPrefix),
+      danger: danger("danger", cssVarPrefix),
       common: {
-        white: "#ffffff",
-        black: "#000000",
+        white,
+        black,
         divider: getCssVar("colors-neutral-200"),
         focusRing: getCssVar("colors-primary-500"),
       },
@@ -39,23 +143,25 @@ export function createDefaultColors(cssVarPrefix: string): ThemeColors {
       },
       background: {
         body: getCssVar("colors-common-white"),
-        surface0: getCssVar("colors-common-white"),
-        surface1: getCssVar("colors-neutral-50"),
-        surface2: getCssVar("colors-neutral-100"),
-        surface3: getCssVar("colors-neutral-200"),
+        surface: getCssVar("colors-common-white"),
+        level1: getCssVar("colors-neutral-50"),
+        level2: getCssVar("colors-neutral-100"),
+        level3: getCssVar("colors-neutral-200"),
         tooltip: getCssVar("colors-neutral-800"),
       },
     },
     dark: {
-      primary: blueDark("primary", cssVarPrefix),
-      neutral: grayDark("neutral", cssVarPrefix),
-      success: greenDark("success", cssVarPrefix),
-      info: purpleDark("info", cssVarPrefix),
-      warning: yellowDark("warning", cssVarPrefix),
-      danger: redDark("danger", cssVarPrefix),
+      whiteAlpha,
+      blackAlpha,
+      primary: primaryDark("primary", cssVarPrefix),
+      neutral: neutralDark("neutral", cssVarPrefix),
+      success: successDark("success", cssVarPrefix),
+      info: infoDark("info", cssVarPrefix),
+      warning: warningDark("warning", cssVarPrefix),
+      danger: dangerDark("danger", cssVarPrefix),
       common: {
-        white: "#ffffff",
-        black: "#0a0a0a", // very dark neutral gray, do not use pure black.
+        white,
+        black,
         divider: getCssVar("colors-neutral-800"),
         focusRing: getCssVar("colors-primary-500"),
       },
@@ -66,10 +172,10 @@ export function createDefaultColors(cssVarPrefix: string): ThemeColors {
       },
       background: {
         body: getCssVar("colors-neutral-900"),
-        surface0: getCssVar("colors-neutral-900"),
-        surface1: getCssVar("colors-neutral-800"),
-        surface2: getCssVar("colors-neutral-700"),
-        surface3: getCssVar("colors-neutral-600"),
+        surface: getCssVar("colors-neutral-900"),
+        level1: getCssVar("colors-neutral-800"),
+        level2: getCssVar("colors-neutral-700"),
+        level3: getCssVar("colors-neutral-600"),
         tooltip: getCssVar("colors-neutral-600"),
       },
     },
