@@ -7,12 +7,42 @@
  */
 
 import { createHopeComponent, hope, mapResponsive, ResponsiveValue } from "@hope-ui/styles";
-import { clsx } from "clsx";
-import { splitProps } from "solid-js";
+import { ComponentProps, splitProps } from "solid-js";
 
 import { mergeDefaultProps } from "../utils";
 
-export interface AspectRatioProps {
+const BaseAspectRatio = hope(
+  "div",
+  {
+    base: {
+      position: "relative",
+      maxWidth: "100%",
+
+      "&::before": {
+        content: '""',
+        height: 0,
+        display: "block",
+      },
+
+      "& > *:not(style)": {
+        overflow: "hidden",
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        boxSize: "100%",
+      },
+
+      "& > img, & > video": {
+        objectFit: "cover",
+      },
+    },
+  },
+  "hope-AspectRatio-root"
+);
+
+export interface AspectRatioProps extends ComponentProps<typeof BaseAspectRatio> {
   /**
    * The aspect ratio of the Box.
    * Common values are: `21/9`, `16/9`, `9/16`, `4/3`, `1.85/1`
@@ -25,40 +55,13 @@ export interface AspectRatioProps {
  * to a desired aspect ratio.
  */
 export const AspectRatio = createHopeComponent<"div", AspectRatioProps>(props => {
-  props = mergeDefaultProps(
-    {
-      ratio: 4 / 3,
-    },
-    props
-  );
+  props = mergeDefaultProps({ ratio: 4 / 3 }, props);
 
-  const [local, others] = splitProps(props, ["class", "ratio"]);
+  const [local, others] = splitProps(props, ["ratio"]);
 
   return (
-    <hope.div
-      class={clsx("hope-AspectRatio-root", local.class)}
-      __css={{
-        position: "relative",
-        maxWidth: "100%",
-        "&::before": {
-          content: '""',
-          height: 0,
-          display: "block",
-          paddingBottom: mapResponsive(local.ratio, r => `${(1 / r) * 100}%`),
-        },
-        "& > *:not(style)": {
-          overflow: "hidden",
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          boxSize: "100%",
-        },
-        "& > img, & > video": {
-          objectFit: "cover",
-        },
-      }}
+    <BaseAspectRatio
+      _before={{ pb: mapResponsive(local.ratio, r => `${(1 / r) * 100}%`) }}
       {...others}
     />
   );

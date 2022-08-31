@@ -6,39 +6,15 @@
  * https://github.com/chakra-ui/chakra-ui/blob/main/packages/layout/src/kbd.tsx
  */
 
-import { createHopeComponent, createStyleConfig, hope, StyleConfigProps } from "@hope-ui/styles";
+import { ComponentTheme, createHopeComponent, hope } from "@hope-ui/styles";
 import { clsx } from "clsx";
 import { splitProps } from "solid-js";
 
-const useStyleConfig = createStyleConfig<"root", {}>({
-  root: {
-    base: {
-      borderRadius: "md",
-      borderStyle: "solid",
-      borderWidth: "1px",
-      borderBottomWidth: "3px",
+import { KbdStyleConfigProps, useKbdStyleConfig } from "./kbd.styles";
 
-      px: "0.4em",
+export interface KbdProps extends KbdStyleConfigProps {}
 
-      color: "text.primary",
-      fontFamily: "mono",
-      fontSize: "0.8em",
-      fontWeight: "bold",
-      lineHeight: "normal",
-      whiteSpace: "nowrap",
-
-      borderColor: "neutral.300",
-      backgroundColor: "neutral.100",
-
-      _dark: {
-        borderColor: "neutral.600",
-        backgroundColor: "neutral.800",
-      },
-    },
-  },
-});
-
-export type KbdProps = StyleConfigProps<typeof useStyleConfig>;
+export type KbdTheme = ComponentTheme<KbdProps>;
 
 /**
  * `Kbd` is a semantic component used to render keyboard shortcut.
@@ -47,12 +23,10 @@ export const Kbd = createHopeComponent<"kbd", KbdProps>(props => {
   const [local, styleConfigProps, others] = splitProps(
     props,
     ["class"],
-    ["styleConfigOverrides", "unstyled"]
+    ["styleConfig", "unstyled"]
   );
 
-  const { classes, styleOverrides } = useStyleConfig("Kbd", styleConfigProps);
+  const { classes, styles } = useKbdStyleConfig("Kbd", styleConfigProps);
 
-  return (
-    <hope.kbd class={clsx(classes().root, local.class)} __css={styleOverrides().root} {...others} />
-  );
+  return <hope.kbd class={clsx(classes().root, local.class)} __css={styles().root} {...others} />;
 });

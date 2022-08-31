@@ -348,13 +348,13 @@ describe("toCSSObject", () => {
 
     expect(keys).toMatchInlineSnapshot(`
     Array [
+      "paddingInlineStart",
+      "paddingInlineEnd",
       "flexDirection",
       "@media screen and (min-width: 640px)",
       "@media screen and (min-width: 768px)",
       "color",
       "height",
-      "paddingInlineStart",
-      "paddingInlineEnd",
       "paddingTop",
       "paddingBottom",
     ]

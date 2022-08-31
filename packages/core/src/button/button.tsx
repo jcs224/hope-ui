@@ -1,3 +1,4 @@
+import { createTagName } from "@hope-ui/primitives";
 import {
   createHopeComponent,
   hope,
@@ -5,12 +6,11 @@ import {
   StyleConfigProvider,
   useStyleConfigContext,
 } from "@hope-ui/styles";
-import { mergeRefs } from "@solid-primitives/refs";
+import { mergeRefs } from "@hope-ui/utils";
 import { clsx } from "clsx";
 import { createMemo, createSignal, onMount, Show, splitProps } from "solid-js";
 
-import { createTagName } from "../primitives/create-tag-name";
-import { ButtonParts, useStyleConfig } from "./button.styles";
+import { ButtonParts, useButtonStyleConfig } from "./button.styles";
 import { ButtonIcon } from "./button-icon";
 import { ButtonLoader } from "./button-loader";
 import { isButton } from "./is-button";
@@ -35,7 +35,7 @@ export const Button = createHopeComponent<"button", ButtonProps>(props => {
       "isDisabled",
     ],
     ["children", "leftIcon", "rightIcon"],
-    ["styleConfigOverrides", "unstyled", "colorScheme", "variant", "size", "isFullWidth"]
+    ["styleConfig", "unstyled", "colorScheme", "variant", "size", "isFullWidth"]
   );
 
   const tagName = createTagName(
@@ -55,14 +55,14 @@ export const Button = createHopeComponent<"button", ButtonProps>(props => {
     return isNativeButton() ? "button" : undefined;
   });
 
-  const { classes, styleOverrides } = useStyleConfig("Button", styleConfigProps);
+  const { classes, styles } = useButtonStyleConfig("Button", styleConfigProps);
 
   onMount(() => {
     ref != null && setIsNativeButton(isButton(ref));
   });
 
   return (
-    <StyleConfigProvider value={{ classes, styleOverrides }}>
+    <StyleConfigProvider value={{ classes, styles }}>
       <hope.button
         as={local.as}
         ref={mergeRefs(el => (ref = el), local.ref)}
@@ -72,7 +72,7 @@ export const Button = createHopeComponent<"button", ButtonProps>(props => {
         disabled={local.isDisabled}
         data-loading={local.isLoading || undefined}
         class={clsx(classes().root, local.class)}
-        __css={styleOverrides().root}
+        __css={styles().root}
         {...others}
       >
         <Show when={local.isLoading && local.loaderPlacement === "start"}>
@@ -99,18 +99,18 @@ export const Button = createHopeComponent<"button", ButtonProps>(props => {
 });
 
 function ButtonContent(props: ButtonContentProps) {
-  const { classes, styleOverrides } = useStyleConfigContext<ButtonParts>();
+  const { classes, styles } = useStyleConfigContext<ButtonParts>();
 
   return (
     <>
       <Show when={props.leftIcon}>
-        <ButtonIcon class={classes().leftIcon} __css={styleOverrides().leftIcon}>
+        <ButtonIcon class={classes().leftIcon} __css={styles().leftIcon}>
           {props.leftIcon}
         </ButtonIcon>
       </Show>
       {props.children}
       <Show when={props.rightIcon}>
-        <ButtonIcon class={classes().rightIcon} __css={styleOverrides().rightIcon}>
+        <ButtonIcon class={classes().rightIcon} __css={styles().rightIcon}>
           {props.rightIcon}
         </ButtonIcon>
       </Show>

@@ -1,8 +1,9 @@
+export * from "./create-global-styles";
 export * from "./create-hope-component";
 export * from "./create-style-config";
 export * from "./factory";
 export * from "./keyframes";
-export * from "./stitches.config";
+export { getCssText, keyframes } from "./stitches.config";
 export * from "./styled-system";
 export * from "./theme";
 export * from "./types";

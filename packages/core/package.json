@@ -49,28 +49,30 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@floating-ui/dom": "1.0.1",
+    "@hope-ui/primitives": "0.0.0",
     "@hope-ui/styles": "0.0.0",
-    "@hope-ui/utils": "0.0.0",
-    "@solid-primitives/refs": "0.3.0"
+    "@hope-ui/utils": "0.0.0"
   },
   "devDependencies": {
     "@hope-ui/tests": "workspace:*",
-    "@storybook/addon-a11y": "6.4.20",
-    "@storybook/addon-actions": "6.4.20",
-    "@storybook/addon-essentials": "6.4.20",
-    "@storybook/addon-links": "6.4.20",
-    "@storybook/addons": "6.4.20",
-    "@storybook/api": "6.4.20",
-    "@storybook/builder-webpack5": "6.4.20",
-    "@storybook/components": "6.4.20",
-    "@storybook/core-events": "6.4.20",
-    "@storybook/html": "6.4.20",
-    "@storybook/manager-webpack5": "6.4.20",
-    "@storybook/theming": "6.4.20",
+    "@storybook/addon-a11y": "6.5.10",
+    "@storybook/addon-actions": "6.5.10",
+    "@storybook/addon-essentials": "6.5.10",
+    "@storybook/addon-links": "6.5.10",
+    "@storybook/addons": "6.5.10",
+    "@storybook/api": "6.5.10",
+    "@storybook/builder-webpack5": "6.5.10",
+    "@storybook/components": "6.5.10",
+    "@storybook/core-events": "6.5.10",
+    "@storybook/html": "6.5.10",
+    "@storybook/manager-webpack5": "6.5.10",
+    "@storybook/theming": "6.5.10",
     "storybook-dark-mode": "1.1.0"
   },
   "peerDependencies": {
-    "solid-js": "^1.4.7"
+    "@motionone/solid": "^10.14.1",
+    "solid-js": "^1.5.1"
   },
   "publishConfig": {
     "access": "public"

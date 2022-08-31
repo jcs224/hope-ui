@@ -60,12 +60,7 @@ export function toCSSObject(systemStyleObject: SystemStyleObject, theme: Theme):
             );
           }
         } else {
-          computedStyles = Object.assign(
-            {},
-            computedStyles,
-            toCSSObject({ [key]: val }, theme)
-            //toCSSObject({ ...systemStyleObject, [key]: val }, theme)
-          );
+          computedStyles = Object.assign({}, toCSSObject({ [key]: val }, theme), computedStyles);
         }
       }
 
