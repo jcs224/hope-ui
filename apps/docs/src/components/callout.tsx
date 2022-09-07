@@ -3,12 +3,11 @@ import { hope } from "@hope-ui/core";
 export const Callout = hope(
   "div",
   {
-    base: {
+    baseStyle: {
       display: "flex",
       alignItems: "center",
-      gap: 4,
       rounded: "md",
-      my: 8,
+      mt: 6,
       p: 4,
       fontSize: "base",
       lineHeight: 6,
