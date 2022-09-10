@@ -43,36 +43,20 @@ export interface PaletteRange extends PaletteScale {
   darkChannel: string;
 }
 
-export interface PaletteCommon {
+interface CommonPalette {
   white: string;
   black: string;
-  divider: string;
+  foreground: string;
+  background: string;
   focusRing: string;
-}
-
-export interface PaletteText {
-  primary: string;
-  secondary: string;
-  tertiary: string;
-}
-
-export interface PaletteBackground {
-  body: string;
-  surface: string;
-  level1: string;
-  level2: string;
-  level3: string;
 }
 
 export type ThemePaletteRanges = Record<ThemeColorScheme, PaletteRange>;
 
-// Note: ColorSystem keys can't be objects more than one level deep.
 export interface ColorSystem extends ThemePaletteRanges {
   whiteAlpha: PaletteScale;
   blackAlpha: PaletteScale;
-  common: PaletteCommon;
-  text: PaletteText;
-  background: PaletteBackground;
+  common: CommonPalette;
 }
 
 /**
@@ -85,10 +69,10 @@ export interface ColorSystem extends ThemePaletteRanges {
  *     100: string;
  *   };
  *   common: {
- *     divider: string;
+ *     background: string;
  *   }
  * }
- * => 'primary.50' | 'primary.100' | 'common.divider'
+ * => 'primary.50' | 'primary.100' | 'common.background'
  */
 type ColorSystemStringUnion<K extends keyof ColorSystem> = ColorSystem[K] extends Record<
   string,

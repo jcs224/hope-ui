@@ -147,18 +147,18 @@ function getRootSoftColorSchemeCompoundVariants(vars: ThemeVars) {
 
         _dark: {
           color: vars.colors[colorScheme]["200"],
-          backgroundColor: rgba(vars.colors[colorScheme].mainChannel, isNeutral ? 0.1 : 0.2),
+          backgroundColor: rgba(vars.colors[colorScheme].mainChannel, 0.2),
           borderColor: "transparent",
 
           _hover: {
             color: vars.colors[colorScheme]["200"],
-            backgroundColor: rgba(vars.colors[colorScheme].mainChannel, isNeutral ? 0.2 : 0.3),
+            backgroundColor: rgba(vars.colors[colorScheme].mainChannel, 0.3),
             borderColor: "transparent",
           },
 
           _active: {
             color: vars.colors[colorScheme]["200"],
-            backgroundColor: rgba(vars.colors[colorScheme].mainChannel, isNeutral ? 0.3 : 0.4),
+            backgroundColor: rgba(vars.colors[colorScheme].mainChannel, 0.4),
             borderColor: "transparent",
           },
 
@@ -217,13 +217,13 @@ function getRootOutlinedColorSchemeCompoundVariants(vars: ThemeVars) {
 
           _hover: {
             color: vars.colors[colorScheme]["200"],
-            backgroundColor: rgba(vars.colors[colorScheme].mainChannel, isNeutral ? 0.05 : 0.1),
+            backgroundColor: rgba(vars.colors[colorScheme].mainChannel, 0.1),
             borderColor: vars.colors[colorScheme]["700"],
           },
 
           _active: {
             color: vars.colors[colorScheme]["200"],
-            backgroundColor: rgba(vars.colors[colorScheme].mainChannel, isNeutral ? 0.1 : 0.2),
+            backgroundColor: rgba(vars.colors[colorScheme].mainChannel, 0.2),
             borderColor: vars.colors[colorScheme]["700"],
           },
 
@@ -282,13 +282,13 @@ function getRootPlainColorSchemeCompoundVariants(vars: ThemeVars) {
 
           _hover: {
             color: vars.colors[colorScheme]["200"],
-            backgroundColor: rgba(vars.colors[colorScheme].mainChannel, isNeutral ? 0.05 : 0.1),
+            backgroundColor: rgba(vars.colors[colorScheme].mainChannel, 0.1),
             borderColor: "transparent",
           },
 
           _active: {
             color: vars.colors[colorScheme]["200"],
-            backgroundColor: rgba(vars.colors[colorScheme].mainChannel, isNeutral ? 0.1 : 0.2),
+            backgroundColor: rgba(vars.colors[colorScheme].mainChannel, 0.2),
             borderColor: "transparent",
           },
 
