@@ -145,56 +145,60 @@ export const NAV_SECTIONS: NavSection[] = [
         title: "Button",
         href: "/docs/components/button",
       },
+      /*
       {
         title: "IconButton",
         href: "/docs/components/icon-button",
       },
+      */
     ],
   },
-  /*{
-    title: "Data entry",
-    links: [
-      {
-        title: "",
-        href: "/docs/components/",
-      },
-    ],
-  },
-  {
-    title: "Data display",
-    links: [
-      {
-        title: "",
-        href: "/docs/components/",
-      },
-    ],
-  },
-  {
-    title: "Feedback",
-    links: [
-      {
-        title: "",
-        href: "/docs/components/",
-      },
-    ],
-  },
-  {
-    title: "Navigation",
-    links: [
-      {
-        title: "",
-        href: "/docs/components/",
-      },
-    ],
-  },
-  {
-    title: "Overlays",
-    links: [
-      {
-        title: "",
-        href: "/docs/components/",
-      },
-    ],
-  },*/
+  /*
+{
+  title: "Data entry",
+  links: [
+    {
+      title: "",
+      href: "/docs/components/",
+    },
+  ],
+},
+{
+  title: "Data display",
+  links: [
+    {
+      title: "",
+      href: "/docs/components/",
+    },
+  ],
+},
+{
+  title: "Feedback",
+  links: [
+    {
+      title: "",
+      href: "/docs/components/",
+    },
+  ],
+},
+{
+  title: "Navigation",
+  links: [
+    {
+      title: "",
+      href: "/docs/components/",
+    },
+  ],
+},
+{
+  title: "Overlays",
+  links: [
+    {
+      title: "",
+      href: "/docs/components/",
+    },
+  ],
+},
+*/
   //...CHANGELOG_NAV_SECTIONS,
 ];

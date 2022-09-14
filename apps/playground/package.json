@@ -1,7 +1,7 @@
 {
-  "name": "@hope-ui/docs",
+  "name": "@hope-ui/playground",
   "private": true,
-  "description": "Documentation website of the Hope UI component library.",
+  "description": "Playground for the Hope UI component library.",
   "keywords": [
     "solid",
     "solidjs",
@@ -10,7 +10,7 @@
     "design-system",
     "components"
   ],
-  "homepage": "https://github.com/hope-ui/hope-ui/tree/main/apps/docs#readme",
+  "homepage": "https://github.com/hope-ui/hope-ui/tree/main/apps/playground#readme",
   "bugs": {
     "url": "https://github.com/hope-ui/hope-ui/issues"
   },
@@ -22,10 +22,8 @@
   "author": "Fabien Marie-Louise <fabienml.dev@gmail.com>",
   "type": "module",
   "scripts": {
-    "build": "solid-start build",
-    "clean": "rm -rf .solid && rm -rf netlify && rm -rf .turbo && rm -rf node_modules && rm -rf dist",
-    "dev": "solid-start dev --host",
-    "start": "solid-start start"
+    "clean": "rm -rf .solid && rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "dev": "solid-start dev --host"
   },
   "dependencies": {
     "@hope-ui/core": "workspace:*",
@@ -36,20 +34,9 @@
     "clsx": "1.2.1"
   },
   "devDependencies": {
-    "@hope-ui/mdx": "workspace:*",
     "babel-preset-solid": "1.5.4",
-    "encoding": "0.1.13",
-    "iconv-lite": "0.6.3",
-    "node-fetch": "2.6.7",
-    "rehype-pretty-code": "0.3.2",
-    "remark-code-extra": "1.0.1",
-    "remark-gfm": "3.0.1",
-    "safer-buffer": "2.1.2",
-    "shiki": "0.11.1",
     "solid-js": "1.5.4",
-    "solid-mdx": "0.0.6",
     "solid-start": "0.1.0-alpha.99",
-    "solid-start-netlify": "0.1.0-alpha.99",
     "solid-start-node": "0.1.0-alpha.99",
     "typescript": "4.7.4",
     "undici": "5.8.1",
