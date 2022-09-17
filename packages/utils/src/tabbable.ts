@@ -14,23 +14,11 @@
 
 import { isFrame } from "./dom";
 
-const FOCUSABLE_ELEMENT_SELECTOR = [
-  "input:not([disabled]):not([type=hidden])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  "button:not([disabled])",
-  "a[href]",
-  "area[href]",
-  "summary",
-  "iframe",
-  "object",
-  "embed",
-  "audio[controls]",
-  "video[controls]",
-  "[contenteditable]:not([contenteditable='false'])",
-  ":not([hidden])",
-  "[tabindex]:not([disabled]):not([hidden])",
-].join(",");
+const FOCUSABLE_ELEMENT_SELECTOR =
+  "input:not([type='hidden']):not([disabled]), select:not([disabled]), " +
+  "textarea:not([disabled]), a[href], button:not([disabled]), [tabindex], " +
+  "iframe, object, embed, area[href], audio[controls], video[controls], " +
+  "[contenteditable]:not([contenteditable='false'])";
 
 /**
  * Returns all the tabbable elements in `container`.
@@ -84,6 +72,21 @@ function hasNegativeTabIndex(element: Element) {
   return tabIndex < 0;
 }
 
+/**
+ * Adapted from https://github.com/testing-library/jest-dom and
+ * https://github.com/vuejs/vue-test-utils-next/.
+ * Licensed under the MIT License.
+ * @param element - Element to evaluate for display or visibility.
+ */
+function isElementVisible(element: Element, childElement?: Element): boolean {
+  return (
+    element.nodeName !== "#comment" &&
+    isStyleVisible(element) &&
+    isAttributeVisible(element, childElement) &&
+    (!element.parentElement || isElementVisible(element.parentElement, element))
+  );
+}
+
 function isStyleVisible(element: Element) {
   if (!(element instanceof HTMLElement) && !(element instanceof SVGElement)) {
     return false;
@@ -116,20 +119,5 @@ function isAttributeVisible(element: Element, childElement?: Element) {
     (element.nodeName === "DETAILS" && childElement && childElement.nodeName !== "SUMMARY"
       ? element.hasAttribute("open")
       : true)
-  );
-}
-
-/**
- * Adapted from https://github.com/testing-library/jest-dom and
- * https://github.com/vuejs/vue-test-utils-next/.
- * Licensed under the MIT License.
- * @param element - Element to evaluate for display or visibility.
- */
-function isElementVisible(element: Element, childElement?: Element): boolean {
-  return (
-    element.nodeName !== "#comment" &&
-    isStyleVisible(element) &&
-    isAttributeVisible(element, childElement) &&
-    (!element.parentElement || isElementVisible(element.parentElement, element))
   );
 }

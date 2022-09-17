@@ -1,17 +1,17 @@
 import {
   checkAccessibility,
   itIsPolymorphic,
-  itSupportsClass,
   itRendersChildren,
+  itSupportsClass,
   itSupportsRef,
   itSupportsStyle,
 } from "@hope-ui/tests";
 import { render, screen } from "solid-testing-library";
 
 import { createIcon } from "../icon";
+import { Button } from "./button";
 import { IconButton } from "./icon-button";
 import { IconButtonProps } from "./types";
-import { Button } from "./button";
 
 const BeakerIcon = createIcon({
   path: () => (
@@ -28,16 +28,13 @@ const BeakerIcon = createIcon({
 
 const defaultProps: IconButtonProps = {
   "aria-label": "test",
-  icon: () => <BeakerIcon />,
+  children: () => <BeakerIcon />,
 };
 
 describe("IconButton", () => {
   checkAccessibility([<IconButton {...defaultProps} />]);
   itIsPolymorphic(IconButton as any, defaultProps);
-  itRendersChildren(Button as any, {
-    "aria-label": "test",
-    children: () => <BeakerIcon />,
-  });
+  itRendersChildren(Button as any, defaultProps);
   itSupportsClass(IconButton as any, defaultProps);
   itSupportsRef(IconButton as any, defaultProps, HTMLButtonElement);
   itSupportsStyle(IconButton as any, defaultProps);

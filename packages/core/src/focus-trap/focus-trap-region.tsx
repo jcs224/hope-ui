@@ -3,16 +3,20 @@
  * MIT Licensed, Copyright (c) Diego Haz.
  *
  * Credits to the Ariakit team:
- * https://github.com/ariakit/ariakit/blob/main/packages/ariakit/src/focus-trap/focus-trap-region.tsx
+ * https://github.com/ariakit/ariakit/blob/232bc79018ec20967fec1e097a9474aba3bb5be7/packages/ariakit/src/focus-trap/focus-trap-region.tsx
  */
 
 import { createHopeComponent, hope } from "@hope-ui/styles";
-import { getAllTabbableIn, mergeRefs } from "@hope-ui/utils";
+import { focusWithoutScrolling, getAllTabbableIn, mergeRefs } from "@hope-ui/utils";
 import { JSX, onCleanup, onMount, ParentProps, Show, splitProps } from "solid-js";
 
+import { mergeDefaultProps } from "../utils";
 import { VisuallyHidden } from "../visually-hidden";
 
-export interface FocusTrapProps extends ParentProps {
+export interface FocusTrapRegionProps extends ParentProps {
+  /** Whether the focus trap should be active. */
+  trapFocus?: boolean;
+
   /**
    * A query selector to retrieve the element that should receive focus once `FocusTrap` mounts.
    * This value has priority over `autoFocus`.
@@ -31,25 +35,30 @@ export interface FocusTrapProps extends ParentProps {
 
   /** Whether focus should be restored to the element that triggered the `FocusTrap` once it unmounts. */
   restoreFocus?: boolean;
-
-  /** Whether the focus trap should be disabled. */
-  isDisabled?: boolean;
 }
 
 /**
- * `FocusTrap` traps focus within itself.
+ * `FocusTrapRegion` traps focus within itself.
  */
-export const FocusTrap = createHopeComponent<"div", FocusTrapProps>(props => {
+export const FocusTrapRegion = createHopeComponent<"div", FocusTrapRegionProps>(props => {
   let finalFocusElement: HTMLElement | null;
   let containerRef: HTMLDivElement | undefined;
 
+  props = mergeDefaultProps(
+    {
+      trapFocus: true,
+      initialFocusSelector: "[data-autofocus]",
+    },
+    props
+  );
+
   const [local, others] = splitProps(props, [
     "ref",
+    "trapFocus",
     "initialFocusSelector",
     "finalFocusSelector",
     "autoFocus",
     "restoreFocus",
-    "isDisabled",
   ]);
 
   const setFinalFocusElement = () => {
@@ -71,31 +80,33 @@ export const FocusTrap = createHopeComponent<"div", FocusTrapProps>(props => {
     }
 
     const initialFocusElement = containerRef.querySelector(
-      local.initialFocusSelector ?? "[data-autofocus]"
+      local.initialFocusSelector!
     ) as HTMLElement | null;
 
     if (initialFocusElement) {
-      initialFocusElement.focus();
+      focusWithoutScrolling(initialFocusElement);
       return;
     }
 
     // fallback to first focusable element or container.
     if (local.autoFocus) {
-      const first = getAllTabbableIn(containerRef)[0];
-      first ? first.focus() : containerRef.focus();
+      const first = getAllTabbableIn(containerRef)[0] ?? containerRef;
+      focusWithoutScrolling(first);
     }
   };
 
-  const onFocus: JSX.EventHandlerUnion<HTMLSpanElement, FocusEvent> = event => {
+  const onTrapFocus: JSX.EventHandlerUnion<HTMLSpanElement, FocusEvent> = event => {
     if (!containerRef) {
       return;
     }
 
-    const tabbables = getAllTabbableIn(containerRef);
+    // Because this function run only when focus trap is active,
+    // we remove first and last element since they are `FocusTrap`.
+    const tabbables = getAllTabbableIn(containerRef).slice(1, -1);
 
     // Fallback to the container element
     if (!tabbables.length) {
-      containerRef.focus();
+      focusWithoutScrolling(containerRef);
       return;
     }
 
@@ -103,9 +114,9 @@ export const FocusTrap = createHopeComponent<"div", FocusTrapProps>(props => {
     const last = tabbables[tabbables.length - 1];
 
     if (event.relatedTarget === first) {
-      last?.focus();
+      focusWithoutScrolling(last);
     } else {
-      first?.focus();
+      focusWithoutScrolling(first);
     }
   };
 
@@ -118,25 +129,23 @@ export const FocusTrap = createHopeComponent<"div", FocusTrapProps>(props => {
   });
 
   onCleanup(() => {
-    finalFocusElement?.focus();
+    finalFocusElement && focusWithoutScrolling(finalFocusElement);
   });
 
   return (
-    <>
-      <Show when={!props.isDisabled}>
-        <FocusTrapElement onFocus={onFocus} />
+    <hope.div ref={mergeRefs(el => (containerRef = el), local.ref)} tabIndex={-1} {...others}>
+      <Show when={local.trapFocus}>
+        <FocusTrap onFocus={onTrapFocus} />
       </Show>
-      <hope.div ref={mergeRefs(el => (containerRef = el), local.ref)} tabIndex={-1} {...others}>
-        {props.children}
-      </hope.div>
-      <Show when={!props.isDisabled}>
-        <FocusTrapElement onFocus={onFocus} />
+      {props.children}
+      <Show when={local.trapFocus}>
+        <FocusTrap onFocus={onTrapFocus} />
       </Show>
-    </>
+    </hope.div>
   );
 });
 
-const FocusTrapElement = createHopeComponent<"span">(props => {
+const FocusTrap = createHopeComponent<"span">(props => {
   return (
     <VisuallyHidden
       data-focus-trap

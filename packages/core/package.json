@@ -1,6 +1,6 @@
 {
   "name": "@hope-ui/core",
-  "version": "1.0.0-next.1",
+  "version": "1.0.0-next.3",
   "private": false,
   "description": "Hope UI core components library.",
   "keywords": [
@@ -50,9 +50,9 @@
   },
   "dependencies": {
     "@floating-ui/dom": "1.0.1",
-    "@hope-ui/primitives": "1.0.0-next.1",
-    "@hope-ui/styles": "1.0.0-next.1",
-    "@hope-ui/utils": "1.0.0-next.1"
+    "@hope-ui/primitives": "1.0.0-next.3",
+    "@hope-ui/styles": "1.0.0-next.3",
+    "@hope-ui/utils": "1.0.0-next.3"
   },
   "devDependencies": {
     "@hope-ui/tests": "workspace:*",
@@ -68,10 +68,10 @@
     "@storybook/html": "6.5.10",
     "@storybook/manager-webpack5": "6.5.10",
     "@storybook/theming": "6.5.10",
-    "storybook-dark-mode": "1.1.0"
+    "storybook-dark-mode": "1.1.2"
   },
   "peerDependencies": {
-    "@motionone/solid": "^10.14.1",
+    "@motionone/solid": "^10.14.2",
     "solid-js": "^1.5.4"
   },
   "publishConfig": {
