@@ -6,14 +6,17 @@ export const usePopoverStyleConfig = createStyleConfig<PopoverParts, {}>(theme =
   root: {
     baseStyle: {
       zIndex: "popover",
+      // Default `position`, `top` and `left` values required by @floating-ui/dom,
+      // see https://floating-ui.com/docs/computeposition#usage
       position: "absolute",
+      top: 0,
+      left: 0,
 
       display: "flex",
       flexDirection: "column",
       justifyContent: "center",
 
       width: "100%",
-      maxWidth: "xs",
 
       outline: "none",
 

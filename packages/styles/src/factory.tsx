@@ -30,8 +30,17 @@ import { computeStyle } from "./styled-system/compute-style";
 import { extractStyleProps } from "./styled-system/extract-style-props";
 import { toCSSObject } from "./styled-system/to-css-object";
 import { useTheme } from "./theme";
-import { BooleanMap, SxProp, SystemStyleObject, Theme, ThemeVarsAndBreakpoints } from "./types";
+import {
+  BooleanMap,
+  HopeProps,
+  PolymorphicProps,
+  SxProp,
+  SystemStyleObject,
+  Theme,
+  ThemeVarsAndBreakpoints,
+} from "./types";
 import { pack } from "./utils";
+import { getNativeHTMLProps, prefixedHTMLPropsMap } from "./utils/prefixed-html-props";
 import { shouldApplyCompound } from "./utils/should-apply-compound";
 
 /**
@@ -163,9 +172,11 @@ function styled<T extends ElementType, Variants extends HopeVariantGroups = {}>(
     // generate style options classNames once.
     runOnce(theme);
 
-    const [local, styleProps, others] = splitProps(
-      props,
-      ["as", "class", "sx", "__css", ...variantPropsKeys],
+    const [local, prefixedHTMLProps, variantProps, styleProps, others] = splitProps(
+      props as PolymorphicProps<T, HopeProps & HopeVariantSelection<Variants>>, // hack to have correct TS types.
+      ["as", "class", "sx", "__css"],
+      [...prefixedHTMLPropsMap.keys()],
+      variantPropsKeys,
       extractStyleProps(props)
     );
 
@@ -176,7 +187,7 @@ function styled<T extends ElementType, Variants extends HopeVariantGroups = {}>(
 
       const selectedVariants = {
         ...styleOptions?.defaultVariants,
-        ...filterUndefined(local),
+        ...filterUndefined(variantProps),
       } as HopeVariantSelection<Variants>;
 
       const { variantClassNames = {} as any, compoundVariants = [] } = styleResult;
@@ -232,6 +243,7 @@ function styled<T extends ElementType, Variants extends HopeVariantGroups = {}>(
             local.class
           ) || undefined
         }
+        {...getNativeHTMLProps(prefixedHTMLProps)}
         {...others}
       />
     );
