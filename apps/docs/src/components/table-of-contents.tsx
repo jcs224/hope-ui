@@ -130,6 +130,7 @@ const TocRoot = hope("div", theme => ({
       height: "calc(100vh - 100px)", // 100vh - height of the header
       mr: `calc(${theme.vars.space["6"]}) * -1`,
       flex: "none",
+      overflowX: "hidden",
       overflowY: "auto",
       py: 16,
       pr: 2,
@@ -151,7 +152,7 @@ export function TableOfContents() {
   const currentSection = useCurrentSection(toc);
 
   return (
-    <TocRoot>
+    <TocRoot class="hide-scrollbar">
       <hope.nav aria-labelledby="on-this-page-title" w={56}>
         <Suspense>
           <Heading
