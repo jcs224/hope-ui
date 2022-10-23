@@ -23,7 +23,7 @@ import {
   size,
 } from "@floating-ui/dom";
 import { createDisclosure, createTransition } from "@hope-ui/primitives";
-import { mergeThemeProps, STYLE_CONFIG_PROP_NAMES, StyleConfigProvider } from "@hope-ui/styles";
+import { mergeThemeProps, STYLE_CONFIG_PROP_NAMES } from "@hope-ui/styles";
 import { contains, getRelatedTarget, runIfFn } from "@hope-ui/utils";
 import { createEffect, createSignal, createUniqueId, JSX, onCleanup, splitProps } from "solid-js";
 import { isServer } from "solid-js/web";
@@ -31,6 +31,8 @@ import { isServer } from "solid-js/web";
 import { usePopoverStyleConfig } from "./popover.styles";
 import { PopoverContext } from "./popover-context";
 import { BasePlacement, PopoverContextValue, PopoverProps } from "./types";
+import { getAnchorElement } from "./utils";
+import { mergeDefaultProps } from "../utils";
 
 /**
  * Popover provides context, theming, and accessibility properties
@@ -42,6 +44,7 @@ export function Popover(props: PopoverProps) {
   props = mergeThemeProps(
     "Popover",
     {
+      getAnchorRect: (anchor?: HTMLElement) => anchor?.getBoundingClientRect(),
       id: `hope-popover-${createUniqueId()}`,
       triggerMode: "click",
       withArrow: true,
@@ -60,7 +63,7 @@ export function Popover(props: PopoverProps) {
 
   const [styleConfigProps] = splitProps(props, [...STYLE_CONFIG_PROP_NAMES]);
 
-  const styleConfigResult = usePopoverStyleConfig("Popover", styleConfigProps);
+  const { baseClasses, styleOverrides } = usePopoverStyleConfig("Popover", styleConfigProps);
 
   const [anchorRef, setAnchorRef] = createSignal<HTMLElement>();
   const [triggerRef, setTriggerRef] = createSignal<HTMLElement>();
@@ -78,59 +81,37 @@ export function Popover(props: PopoverProps) {
     onOpenChange: value => props.onOpenChange?.(value),
   });
 
-  const popoverTransition = createTransition({
-    get shouldMount() {
-      return disclosureState.isOpen();
-    },
-    get transition() {
-      return props.transitionOptions?.transition ?? "pop";
-    },
-    get duration() {
-      return props.transitionOptions?.duration;
-    },
-    get exitDuration() {
-      return props.transitionOptions?.exitDuration;
-    },
-    get delay() {
-      return props.transitionOptions?.delay;
-    },
-    get exitDelay() {
-      return props.transitionOptions?.exitDelay;
-    },
-    get easing() {
-      return props.transitionOptions?.easing;
-    },
-    get exitEasing() {
-      return props.transitionOptions?.exitEasing;
-    },
-    get onBeforeEnter() {
-      return props.transitionOptions?.onBeforeEnter;
-    },
-    get onAfterEnter() {
-      return props.transitionOptions?.onAfterEnter;
-    },
-    get onBeforeExit() {
-      return props.transitionOptions?.onBeforeExit;
-    },
-    get onAfterExit() {
-      return props.transitionOptions?.onAfterExit;
-    },
-  });
+  const popoverTransition = createTransition(
+    () => disclosureState.isOpen(),
+    () =>
+      mergeDefaultProps(
+        {
+          transition: "pop",
+          easing: "ease-out",
+          exitEasing: "ease-in",
+        },
+        props.transitionOptions ?? {}
+      )
+  );
 
   const getPopoverElements = () => {
-    const referenceEl = anchorRef() ?? triggerRef();
+    // Popover anchor is `PopoverAnchor` or `PopoverTrigger` or a virtual element.
+    const anchorEl = getAnchorElement(anchorRef() ?? triggerRef(), props.getAnchorRect!);
     const arrowEl = arrowRef();
     const floatingEl = contentRef();
 
-    return { referenceEl, arrowEl, floatingEl };
+    return { anchorEl, arrowEl, floatingEl };
   };
 
   async function updatePosition() {
-    const { referenceEl, arrowEl, floatingEl } = getPopoverElements();
+    const { anchorEl, arrowEl, floatingEl } = getPopoverElements();
 
-    if (!referenceEl || !floatingEl) {
+    if (!anchorEl || !floatingEl) {
       return;
     }
+
+    // Virtual element doesn't work without this ¯\_(ツ)_/¯
+    anchorEl.getBoundingClientRect();
 
     const middleware = [
       offset(props.offset),
@@ -154,7 +135,7 @@ export function Popover(props: PopoverProps) {
 
     middleware.push(hide());
 
-    const pos = await computePosition(referenceEl, floatingEl, {
+    const pos = await computePosition(anchorEl, floatingEl, {
       placement: props.placement,
       middleware,
     });
@@ -278,13 +259,13 @@ export function Popover(props: PopoverProps) {
   };
 
   createEffect(() => {
-    const { referenceEl, floatingEl } = getPopoverElements();
+    const { anchorEl, floatingEl } = getPopoverElements();
 
-    if (!referenceEl || !floatingEl) {
+    if (!anchorEl || !floatingEl) {
       return;
     }
 
-    const cleanupAutoUpdate = autoUpdate(referenceEl, floatingEl, updatePosition, {
+    const cleanupAutoUpdate = autoUpdate(anchorEl, floatingEl, updatePosition, {
       // JSDOM doesn't support ResizeObserver
       elementResize: typeof ResizeObserver === "function",
     });
@@ -302,6 +283,8 @@ export function Popover(props: PopoverProps) {
   });
 
   const context: PopoverContextValue = {
+    baseClasses,
+    styleOverrides,
     isOpen: disclosureState.isOpen,
     popoverTransition,
     triggerMode: () => props.triggerMode!,
@@ -335,10 +318,8 @@ export function Popover(props: PopoverProps) {
   };
 
   return (
-    <StyleConfigProvider value={styleConfigResult}>
-      <PopoverContext.Provider value={context}>
-        {runIfFn(props.children, disclosureState)}
-      </PopoverContext.Provider>
-    </StyleConfigProvider>
+    <PopoverContext.Provider value={context}>
+      {runIfFn(props.children, disclosureState)}
+    </PopoverContext.Provider>
   );
 }

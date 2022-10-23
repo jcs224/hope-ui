@@ -11,7 +11,12 @@ import {
 } from "@hope-ui/core";
 
 import { Callout } from "~/components/callout";
-import { RenderPropPopoverExample, ControlledPopoverExample } from "~/components/popover-example";
+import {
+  FollowCursorExample,
+  RightClickExample,
+  RenderPropPopoverExample,
+  ControlledPopoverExample,
+} from "~/examples/popover-example";
 import { Preview } from "~/components/preview";
 import { TargetIcon } from "~/components/icons";
 
@@ -198,7 +203,7 @@ Use the `trapFocus` prop to lock focus inside the `PopoverContent`.
     <PopoverContent w="max-content" p={4}>
       <HStack spacing={4}>
         <Button>Button 1</Button>
-        <Button>Button 2</Button>s
+        <Button>Button 2</Button>
       </HStack>
     </PopoverContent>
   </Popover>
@@ -229,7 +234,11 @@ Under the hood, Hope UI will set the correct `aria-labelledby` and `aria-describ
     <PopoverTrigger as={Button}>Trigger</PopoverTrigger>
     <PopoverContent w="max-content" p={4}>
       <PopoverHeading fontWeight="semibold">Title</PopoverHeading>
-      <PopoverDescription fontSize="sm" color="neutral.600" mb={4}>
+      <PopoverDescription
+        fontSize="sm"
+        color={{ light: "neutral.600", dark: "neutral.300" }}
+        mb={4}
+      >
         Description
       </PopoverDescription>
       <p>The content of the Popover.</p>
@@ -242,7 +251,7 @@ Under the hood, Hope UI will set the correct `aria-labelledby` and `aria-describ
   <PopoverTrigger as={Button}>Trigger</PopoverTrigger>
   <PopoverContent w="max-content" p={4}>
     <PopoverHeading fontWeight="semibold">Title</PopoverHeading>
-    <PopoverDescription fontSize="sm" color="neutral.600" mb={4}>
+    <PopoverDescription fontSize="sm" color={{ light: "neutral.600", dark: "neutral.300" }} mb={4}>
       Description
     </PopoverDescription>
     <p>The content of the Popover.</p>
@@ -417,6 +426,95 @@ In the example below, the `Button` is the trigger that opens/closes the popover 
 </Popover>
 ```
 
+### Using virtual element
+
+The `getAnchorRect` prop allows to use a virtual element as popover's anchor.
+
+The below example shows how to make a popover that follow user's cursor.
+
+<Preview>
+  <FollowCursorExample />
+</Preview>
+
+```tsx
+function FollowCursorExample() {
+  const [anchorRect, setAnchorRect] = createSignal({ x: 0, y: 0 });
+  const [isOpen, setIsOpen] = createSignal(false);
+
+  return (
+    <>
+      <Center
+        height="100px"
+        rounded="sm"
+        borderWidth="2px"
+        borderStyle="dashed"
+        borderColor="neutral.300"
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
+        onMouseMove={event => {
+          event.preventDefault();
+          setAnchorRect({ x: event.clientX, y: event.clientY });
+        }}
+      >
+        Hover the area.
+      </Center>
+      <Popover isOpen={isOpen()} onOpenChange={setIsOpen} getAnchorRect={anchorRect}>
+        <PopoverContent w="max-content" p={4}>
+          <p>The content of the Popover.</p>
+        </PopoverContent>
+      </Popover>
+    </>
+  );
+}
+```
+
+You can also pair it with the `createInteractOutside` primitive to create a _context menu_ like behavior.
+
+<Preview>
+  <RightClickExample />
+</Preview>
+
+```tsx
+function RightClickExample() {
+  let containerRef: HTMLDivElement | undefined;
+
+  const [anchorRect, setAnchorRect] = createSignal({ x: 0, y: 0 });
+  const [isOpen, setIsOpen] = createSignal(false);
+
+  createInteractOutside(
+    {
+      onInteractOutside: () => setIsOpen(false),
+    },
+    () => containerRef
+  );
+
+  return (
+    <>
+      <Center
+        ref={containerRef}
+        height="100px"
+        rounded="sm"
+        borderWidth="2px"
+        borderStyle="dashed"
+        borderColor="neutral.300"
+        onContextMenu={event => {
+          event.preventDefault();
+          setAnchorRect({ x: event.clientX, y: event.clientY });
+          setIsOpen(true);
+        }}
+      >
+        Right click in the area.
+      </Center>
+      <Popover isOpen={isOpen()} onOpenChange={setIsOpen} getAnchorRect={anchorRect}>
+        <PopoverContent w="max-content" p={4}>
+          <p>The content of the Popover.</p>
+        </PopoverContent>
+      </Popover>
+    </>
+  );
+}
+```
+
 ### Accessing internal state
 
 Popover provides access to its internal `isOpen` state and a `close` method that you can access via a render prop.
@@ -521,10 +619,12 @@ const theme = extendTheme({
 
 ### Component parts
 
-| Name  | Static selector      | Description     |
-| ----- | -------------------- | --------------- |
-| root  | `hope-Popover-root`  | Popover content |
-| arrow | `hope-Popover-arrow` | Popover arrow   |
+| Name        | Static selector            | Description         |
+| ----------- | -------------------------- | ------------------- |
+| root        | `hope-Popover-root`        | Popover content     |
+| arrow       | `hope-Popover-arrow`       | Popover arrow       |
+| heading     | `hope-Popover-heading`     | Popover heading     |
+| description | `hope-Popover-description` | Popover description |
 
 ## Props
 
@@ -532,10 +632,10 @@ const theme = extendTheme({
 
 | Name                 | Type                                       | Description                                                                                    | Default value |
 | -------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------- | ------------- |
-| id                   | `string`                                   | The id of the popover content.                                                                 |               |
 | isOpen               | `boolean`                                  | Whether the popover should be shown (in controlled mode).                                      |               |
 | defaultIsOpen        | `boolean`                                  | Whether the popover should be initially shown (in uncontrolled mode).                          |               |
 | onOpenChange         | `(isOpen: boolean) => void`                | A function that will be called when the `isOpen` state of the popover changes.                 |               |
+| id                   | `string`                                   | The id of the popover content.                                                                 |               |
 | children             | `JSX.Element \| PopoverChildrenRenderProp` | Children of the popover.                                                                       |               |
 | transitionOptions    | `TransitionOptions`                        | Options passed to the popover transition.                                                      |               |
 | triggerMode          | `"hover" \| "click"`                       | The interaction that triggers the popover.                                                     | "click"       |

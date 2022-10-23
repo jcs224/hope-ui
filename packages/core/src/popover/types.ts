@@ -1,72 +1,20 @@
 import type { Placement as FloatingPlacement } from "@floating-ui/dom";
 import { TransitionOptions, TransitionResult } from "@hope-ui/primitives";
-import { ComponentTheme } from "@hope-ui/styles";
+import { ComponentTheme, HopeProps, SystemStyleObject } from "@hope-ui/styles";
 import { Accessor, JSX, Setter } from "solid-js";
 
-import { PopoverStyleConfigProps } from "./popover.styles";
+import { PopoverParts, PopoverStyleConfigProps } from "./popover.styles";
 
 export type BasePlacement = "top" | "bottom" | "left" | "right";
 
-interface BasePopoverState {
-  /** Whether the popover should be shown. */
-  isOpen: boolean;
+type PopoverTriggerMode = "hover" | "click";
 
-  /** Options passed to the popover transition. */
-  transitionOptions?: Partial<Omit<TransitionOptions, "shouldMount">>;
-
-  /**
-   * The interaction that triggers the popover.
-   *
-   * `hover` - means the popover will open when you hover with mouse or
-   * focus with keyboard on the popover trigger
-   *
-   * `click` - means the popover will open on click or
-   * press `Enter` to `Space` on keyboard
-   */
-  triggerMode: "hover" | "click";
-
-  /** Whether the popover should display an arrow inside it. */
-  withArrow: boolean;
-
-  /** The size of the arrow (in px). */
-  arrowSize: number;
-
-  /** Placement of the popover. */
-  placement: FloatingPlacement;
-
-  /** Whether the popover should have the same width as the anchor element. */
-  hasSameWidth: boolean;
-
-  /** Offset between the popover and the anchor element (in px). */
-  offset: number;
-
-  /** The minimum padding between the arrow and the popover corner (in px). */
-  arrowPadding: number;
-
-  /** The minimum padding between the popover and the viewport edge (in px). */
-  overflowPadding: number;
-
-  /** Delay before showing the popover on hover (in ms). */
-  openDelay: number;
-
-  /** Delay before hiding the popover on mouse leave (in ms). */
-  closeDelay: number;
-
-  /** Whether the popover should close when the user blur out it by clicking outside or tabbing out. */
-  closeOnBlur: boolean;
-
-  /**  Whether the popover should close when the user hit the `Esc` key. */
-  closeOnEsc: boolean;
-
-  /** Whether the focus will be locked into the popover. */
-  trapFocus: boolean;
-
-  /** A query selector to retrieve the element that should receive focus once `Popover` opens. */
-  initialFocusSelector?: string;
-
-  /** A query selector to retrieve the element that should receive focus once `Popover` closes. */
-  restoreFocusSelector?: string;
-}
+export type AnchorRect = {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+};
 
 export type PopoverChildrenRenderProp = (props: {
   /** Whether the popover should be shown. */
@@ -76,10 +24,7 @@ export type PopoverChildrenRenderProp = (props: {
   close: () => void;
 }) => JSX.Element;
 
-export interface PopoverProps extends PopoverStyleConfigProps, Partial<BasePopoverState> {
-  /** The id of the popover content. */
-  id?: string;
-
+export interface PopoverProps extends Omit<PopoverStyleConfigProps, keyof HopeProps> {
   /** Whether the popover should be shown (in controlled mode). */
   isOpen?: boolean;
 
@@ -91,6 +36,71 @@ export interface PopoverProps extends PopoverStyleConfigProps, Partial<BasePopov
 
   /** Children of the popover. */
   children?: JSX.Element | PopoverChildrenRenderProp;
+
+  /** The id of the popover content. */
+  id?: string;
+
+  /** Options passed to the popover transition. */
+  transitionOptions?: TransitionOptions;
+
+  /**
+   * Function that returns the anchor element's DOMRect. If this is explicitly
+   * passed, it will override the anchor `getBoundingClientRect` method.
+   */
+  getAnchorRect?: (anchor?: HTMLElement) => AnchorRect | undefined;
+
+  /**
+   * The interaction that triggers the popover.
+   *
+   * `hover` - means the popover will open when you hover with mouse or
+   * focus with keyboard on the popover trigger
+   *
+   * `click` - means the popover will open on click or
+   * press `Enter` to `Space` on keyboard
+   */
+  triggerMode?: PopoverTriggerMode;
+
+  /** Whether the popover should display an arrow inside it. */
+  withArrow?: boolean;
+
+  /** The size of the arrow (in px). */
+  arrowSize?: number;
+
+  /** Placement of the popover. */
+  placement?: FloatingPlacement;
+
+  /** Whether the popover should have the same width as the anchor element. */
+  hasSameWidth?: boolean;
+
+  /** Offset between the popover and the anchor element (in px). */
+  offset?: number;
+
+  /** The minimum padding between the arrow and the popover corner (in px). */
+  arrowPadding?: number;
+
+  /** The minimum padding between the popover and the viewport edge (in px). */
+  overflowPadding?: number;
+
+  /** Delay before showing the popover on hover (in ms). */
+  openDelay?: number;
+
+  /** Delay before hiding the popover on mouse leave (in ms). */
+  closeDelay?: number;
+
+  /** Whether the popover should close when the user blur out it by clicking outside or tabbing out. */
+  closeOnBlur?: boolean;
+
+  /** Whether the popover should close when the user hit the `Esc` key. */
+  closeOnEsc?: boolean;
+
+  /** Whether the focus will be locked into the popover. */
+  trapFocus?: boolean;
+
+  /** A query selector to retrieve the element that should receive focus once the popover opens. */
+  initialFocusSelector?: string;
+
+  /** A query selector to retrieve the element that should receive focus once the popover closes. */
+  restoreFocusSelector?: string;
 }
 
 export type PopoverTheme = ComponentTheme<
@@ -111,17 +121,23 @@ export type PopoverTheme = ComponentTheme<
 >;
 
 export interface PopoverContextValue {
+  /** The style config base class names. */
+  baseClasses: Accessor<Record<PopoverParts, string>>;
+
+  /** The style config style overrides. */
+  styleOverrides: Accessor<Record<PopoverParts, SystemStyleObject>>;
+
   /** Whether the popover should be shown. */
-  isOpen: Accessor<BasePopoverState["isOpen"]>;
+  isOpen: Accessor<boolean>;
 
   /** The interaction that triggers the popover. */
-  triggerMode: Accessor<BasePopoverState["triggerMode"]>;
+  triggerMode: Accessor<PopoverTriggerMode>;
 
   /** Whether the popover should display an arrow inside it. */
-  withArrow: Accessor<BasePopoverState["withArrow"]>;
+  withArrow: Accessor<boolean>;
 
   /** The size of the arrow (in px). */
-  arrowSize: Accessor<BasePopoverState["arrowSize"]>;
+  arrowSize: Accessor<number>;
 
   /**
    * The current placement of the popover content. This may be different
@@ -167,13 +183,13 @@ export interface PopoverContextValue {
   setTriggerRef: (el: HTMLElement) => void;
 
   /** Whether the focus will be locked into the popover. */
-  trapFocus: Accessor<BasePopoverState["trapFocus"]>;
+  trapFocus: Accessor<boolean>;
 
-  /** A query selector to retrieve the element that should receive focus once `Popover` opens. */
-  initialFocusSelector: Accessor<BasePopoverState["initialFocusSelector"]>;
+  /** A query selector to retrieve the element that should receive focus once the popover opens. */
+  initialFocusSelector: Accessor<string | undefined>;
 
-  /** A query selector to retrieve the element that should receive focus once `Popover` closes. */
-  restoreFocusSelector: Accessor<BasePopoverState["restoreFocusSelector"]>;
+  /** A query selector to retrieve the element that should receive focus once the popover closes. */
+  restoreFocusSelector: Accessor<string | undefined>;
 
   /** A function that will be called when the popover trigger is clicked. */
   onTriggerClick: () => void;
@@ -193,7 +209,7 @@ export interface PopoverContextValue {
   /** A function that will be called when the mouse leaves the popover trigger. */
   onTriggerMouseLeave: () => void;
 
-  /** A function that will be called when a key is pressed while the popover content has focus. */
+  /** A function that will be called when a key is pressed while the popover content has focus in. */
   onContentKeyDown: JSX.EventHandlerUnion<HTMLElement, KeyboardEvent>;
 
   /** A function that will be called when the popover content loses focus. */
