@@ -19,6 +19,10 @@ const config: Config.InitialOptions = {
 
   setupFilesAfterEnv: ["@testing-library/jest-dom", "regenerator-runtime"],
 
+  transform: {
+    "\\.css\\.ts$": "@vanilla-extract/jest-transform",
+  },
+
   moduleNameMapper: {
     "solid-js/web": `${solidjsPath}/web/dist/web.cjs`,
     "solid-js/store": `${solidjsPath}/store/dist/store.cjs`,
