@@ -1,11 +1,10 @@
-import { Kbd } from "@hope-ui/core";
+import { Kbd, Button } from "@hope-ui/core";
 
 export default function Index() {
   return (
     <>
-      <span>
-        <Kbd>ctrl</Kbd> + <Kbd>A</Kbd>
-      </span>
+      <Kbd>ctrl</Kbd>
+      <Button>Button</Button>
     </>
   );
 }
